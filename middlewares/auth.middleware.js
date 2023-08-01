@@ -15,7 +15,6 @@ const verifyToken = (req, res, next) => {
   }
 
   jwt.verify(token, config.secretKey, (err, payload) => {
-    console.log(err);
     if (err) {
       return res.status(401).send({
         message: "Unauthorized",
@@ -29,21 +28,39 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-// isAdmin = async (req, res, next) => {
-//   const user = await userModel.findOne({ userId: req.userId });
+isAdmin = async (req, res, next) => {
+  const user = await userModel.findOne({ userId: req.userId });
 
-//   if (user && user.userType == constants.userType.customer) {
-//     next();
-//   } else {
-//     return res.status(403).send({
-//       message: `Only ${constants.userType.customer} are allowed`,
-//     });
-//   }
-// };
+  if (user && user.userType == constants.userType.admin) {
+    next();
+  } else {
+    return res.status(403).send({
+      message: `Only ${constants.userType.admin} are allowed`,
+    });
+  }
+};
+
+isAdminOrOwner = async (req, res, next) => {
+  const user = await userModel.findOne({ userId: req.userId });
+
+  if (user.userType == constants.userType.admin || user.userId == req.params.id) {
+    if (req.body.userStatus && user.userType != constants.userType.admin) {
+      return res.status(403).send({
+        message: `Only ${constants.userType.admin} are allowed`,
+      });
+    }
+    next();
+  } else {
+    return res.status(403).send({
+      message: `Only ADMIN and OWNER are allowed to update the data`,
+    });
+  }
+};
 
 const authFunction = {
   verifyToken: verifyToken,
-  // isAdmin: isAdmin,
+  isAdmin: isAdmin,
+  isAdminOrOwner: isAdminOrOwner,
 };
 
 module.exports = authFunction;
