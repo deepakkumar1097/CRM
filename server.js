@@ -6,7 +6,7 @@ const dbConfig = require("./configs/db.config");
 /**Intialize Express**/
 const app = express();
 
-app.use(express.json())
+app.use(express.json());
 
 /**Database Connection**/
 mongoose.connect(dbConfig.DB_URL);
@@ -22,6 +22,7 @@ db.once("open", () => {
 
 require("./routes/auth.route")(app);
 require("./routes/user.route")(app);
+require("./routes/ticket.route")(app);
 
 app.listen(serverConfig.PORT, () => {
   console.log(`Server Started on PORT ${serverConfig.PORT}`);

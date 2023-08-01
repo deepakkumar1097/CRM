@@ -22,6 +22,7 @@ exports.findAll = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
+  // try using findOneandUpdate
   try {
     const user = await User.findOne({ userId: req.params.id });
     /**
