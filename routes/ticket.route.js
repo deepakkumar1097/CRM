@@ -9,4 +9,6 @@ module.exports = function (app) {
     ticketValidator.validateTicketReqBody,
     ticketController.createTicket
   );
+
+  app.get("/crm/api/v1/tickets", auth.verifyToken, ticketController.getTickets);
 };

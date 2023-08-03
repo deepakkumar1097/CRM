@@ -49,3 +49,39 @@ exports.createTicket = async (req, res) => {
     });
   }
 };
+
+
+exports.getTickets = async (req, res) => {
+  /**
+   * If Engg => should get back all the tickets which he/she has created
+   * If Cust => get back all the tickets which are created by the customer
+   */
+  try {
+    /**
+     * Fetch the calling users details
+     */
+
+    const user = await userModel.findOne({ userId: req.userId });
+
+    // user[0].ticketsAssigned.map((e) => {
+    //   console.log(e);
+    // });
+
+    const queryObj = {};
+
+    if (user.userType === "CUSTOMER") {
+      queryObj.reporter = req.userId;
+    } else if (user.userType === "ENGINEER") {
+      queryObj.assignee = req.userId;
+    }
+
+    const tickets = await ticketModel.find(queryObj);
+    res.status(200).send(tickets);
+  } catch (err) {
+    res.status(500).send({
+      message: "Error while creating ticket",
+    });
+  }
+};
+
+// create update ticket
