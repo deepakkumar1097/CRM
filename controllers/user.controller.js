@@ -39,6 +39,9 @@ exports.update = async (req, res) => {
           name: req.body.name,
           userType: req.body.userType,
           userStatus: req.body.userStatus,
+          password: req.body.password,
+          email: req.body.email,
+          userId: req.body.userId,
           // Add other fields to update if needed
         },
       },
@@ -69,7 +72,12 @@ exports.update = async (req, res) => {
       req.body.userStatus != undefined
         ? req.body.userStatus
         : updatedUser.userStatus;
-    //const updatedUser = await user.save();
+    updatedUser.password != undefined
+      ? req.body.password
+      : updatedUser.password;
+    updatedUser.email != undefined ? req.body.email : updatedUser.email;
+    updatedUser.userId != undefined ? req.body.userId : updatedUser.userId;
+    // const updatedUser = await user.save();
 
     res.status(200).send({
       message: "User Updated SuccessFully",
@@ -79,6 +87,7 @@ exports.update = async (req, res) => {
         email: updatedUser.email,
         userType: updatedUser.userType,
         userStatus: updatedUser.userStatus,
+        password: updatedUser.password,
       },
     });
   } catch (err) {
@@ -89,3 +98,23 @@ exports.update = async (req, res) => {
 };
 
 // Create reset password and change userid
+
+// delete user
+
+exports.delete = async (req, res) => {
+  try {
+    const user = await User.findOneAndDelete({ userId: req.params.id });
+    if (!user) {
+      return res.status(404).send({
+        message: `User with the given ID ${req.params.id} is not found`,
+      });
+    }
+    res.status(200).send({
+      message: "User Deleted SuccessFully",
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: "Internal server error",
+    });
+  }
+};

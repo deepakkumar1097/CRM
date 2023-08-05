@@ -15,4 +15,11 @@ module.exports = function (app) {
     authMiddleware.isAdminOrOwner,
     userController.update
   );
+
+  app.delete(
+    "/crm/api/v1/users/:id",
+    authMiddleware.verifyToken,
+    authMiddleware.isAdmin,
+    userController.delete
+  );
 };

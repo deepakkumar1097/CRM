@@ -11,4 +11,6 @@ module.exports = function (app) {
   );
 
   app.get("/crm/api/v1/tickets", auth.verifyToken, ticketController.getTickets);
+
+  app.put("/crm/api/v1/tickets/:ticketId", auth.verifyToken, ticketController.updateTicket);
 };
