@@ -2,28 +2,29 @@ const ticketModel = require("../models/ticket.model");
 const userModel = require("../models/user.model");
 const constants = require("../utils/constants");
 const sendNotification = require("../utils/notificationClient");
+const findEngineerWithLeastTickets = require("../utils/engineerWithLeastTickets");
 
-async function findEngineerWithLeastTickets() {
-  const engineers = await userModel
-    .find({
-      userType: "ENGINEER",
-      userStatus: "APPROVED",
-    })
-    .populate("ticketsAssigned");
+// async function findEngineerWithLeastTickets() {
+//   const engineers = await userModel
+//     .find({
+//       userType: "ENGINEER",
+//       userStatus: "APPROVED",
+//     })
+//     .populate("ticketsAssigned");
 
-  let engineerWithLeastTickets = engineers[0];
+//   let engineerWithLeastTickets = engineers[0];
 
-  for (const engineer of engineers) {
-    if (
-      engineer.ticketsAssigned.length <
-      engineerWithLeastTickets.ticketsAssigned.length
-    ) {
-      engineerWithLeastTickets = engineer;
-    }
-  }
+//   for (const engineer of engineers) {
+//     if (
+//       engineer.ticketsAssigned.length <
+//       engineerWithLeastTickets.ticketsAssigned.length
+//     ) {
+//       engineerWithLeastTickets = engineer;
+//     }
+//   }
 
-  return engineerWithLeastTickets;
-}
+//   return engineerWithLeastTickets;
+// }
 
 exports.createTicket = async (req, res) => {
   try {
@@ -38,13 +39,12 @@ exports.createTicket = async (req, res) => {
       reporter: req.userId,
     };
 
-    /**
-     * Find an engineer with approved status
-     */
-
     const engineerWithLeastTickets = await findEngineerWithLeastTickets();
-
-    if (engineerWithLeastTickets) {
+    if (engineerWithLeastTickets === undefined) {
+      return res.status(500).send({
+        message: "No Engineers found",
+      });
+    } else {
       reqObj.assignee = engineerWithLeastTickets.userId;
     }
 
@@ -60,20 +60,20 @@ exports.createTicket = async (req, res) => {
         engineerWithLeastTickets.ticketsAssigned.push(ticketCreated._id);
         await engineerWithLeastTickets.save();
       }
+
+      /**
+       * We should call email service and send an email to customer and engineer
+       * and provide info related to created ticket
+       */
+
+      var subject = `Ticket Created with id : ${ticketCreated.ticketId}`;
+      var content = `Hello , Ticket Created Successfully`;
+      var emailIds = `${customer.email}, ${engineerWithLeastTickets.email}`;
+
+      sendNotification(subject, content, emailIds, "CRM_APP");
+
+      res.status(201).send(ticketCreated, { message: "Ticket Created" });
     }
-
-    /**
-     * We should call email service and send an email to customer and engineer
-     * and provide info related to created ticket
-     */
-
-    var subject = `Ticket Created with id : ${ticketCreated.ticketId}`;
-    var content = `Hello , Ticket Created Successfully`;
-    var emailIds = `${customer.email}, ${engineerWithLeastTickets.email}`;
-
-    sendNotification(subject, content, emailIds, "CRM_APP");
-
-    res.status(201).send(ticketCreated);
   } catch (err) {
     console.log(err);
     res.status(500).send({
